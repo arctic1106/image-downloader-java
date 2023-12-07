@@ -24,7 +24,7 @@ public class Service {
             for (var link : links) {
                 descargarImagen(obtenerImagenURI(link));
             }
-            System.out.println("Página %s completada".formatted(i));
+            System.out.printf("Página %s completada%n", i);
         }
     }
 
