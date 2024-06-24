@@ -7,6 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,9 +24,30 @@ public class ImageService {
             var links = HtmlParser.getLinksPagina(i);
             LOGGER.log(Level.INFO, "\nPágina {0}: {1} Links encontrados\n", new Object[] { i, links.size() });
             for (var link : links)
-                ImageService.downloadImage(HtmlParser.obtenerImagenURI(link));
+                downloadImage(HtmlParser.obtenerImagenURI(link));
             LOGGER.log(Level.INFO, "\nPágina {0} completada\n", i);
         }
+    }
+
+    public static void downloadNPagesConcurrent(int fromPage, int toPage) {
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            for (var i = fromPage; i <= toPage; i++) {
+                final int pageNumber = i;
+                executor.submit(() -> downloadPageConcurrent(pageNumber));
+            }
+        }
+    }
+
+    private static void downloadPageConcurrent(int pageNumber) {
+        var links = HtmlParser.getLinksPagina(pageNumber);
+        LOGGER.log(Level.INFO, "\nPágina {0}: {1} Links encontrados\n", new Object[] { pageNumber, links.size() });
+
+        try (ExecutorService imageExecutor = Executors.newVirtualThreadPerTaskExecutor()) {
+            for (var link : links) {
+                imageExecutor.submit(() -> downloadImage(HtmlParser.obtenerImagenURI(link)));
+            }
+        }
+        LOGGER.log(Level.INFO, "\nPágina {0} completada\n", pageNumber);
     }
 
     private static void downloadImage(final URI uri) {
