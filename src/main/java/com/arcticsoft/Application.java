@@ -1,11 +1,14 @@
 package com.arcticsoft;
 
 public class Application {
+
     public static void main(String[] args) throws Exception {
-        var numberOfPages = 2;
-        if (args.length > 0) {
-            numberOfPages = Integer.parseInt(args[0]);
+        var fromPage = 11;
+        var toPage = 12;
+        if (args.length == 2) {
+            fromPage = Integer.parseInt(args[0]);
+            toPage = Integer.parseInt(args[1]);
         }
-        new Service().downloadNPages(numberOfPages);
+        ImageService.downloadNPages(fromPage, toPage);
     }
 }
